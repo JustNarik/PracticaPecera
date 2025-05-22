@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Control de Servo - Particle</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    label, input, button { margin: 5px 0; display: block; }
+  </style>
+</head>
+<body>
+
+  <h2>Programar Servo</h2>
+
+  <label for="hour">Hora (0–23):</label>
+  <input type="number" id="hour" min="0" max="23" value="12">
+
+  <label for="minute">Minuto (0–59):</label>
+  <input type="number" id="minute" min="0" max="59" value="40">
+
+  <button onclick="saveTime()">Guardar Hora</button>
+  <button onclick="activateNow()">Activar Ahora</button>
+
+  <p id="status"></p>
+
+  <script>
+    const DEVICE_ID = "0a10aced202194944a055c30";
+    const ACCESS_TOKEN = "ed2b4b082b6e7f701101ccb4b469675e45735485";
+
+    function saveTime() {
+      const hour = document.getElementById('hour').value;
+      const minute = document.getElementById('minute').value;
+      localStorage.setItem("targetHour", hour);
+      localStorage.setItem("targetMinute", minute);
+      document.getElementById("status").innerText = `Hora guardada: ${hour}:${minute}`;
+    }
+
+    function activateNow() {
+      fetch(`https://api.particle.io/v1/devices/${DEVICE_ID}/activateServo`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `access_token=${ACCESS_TOKEN}`
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("status").innerText = "Servo activado.";
+      })
+      .catch(err => {
+        document.getElementById("status").innerText = "Error al activar servo.";
+        console.error(err);
+      });
+    }
+  </script>
+
+</body>
+</html>

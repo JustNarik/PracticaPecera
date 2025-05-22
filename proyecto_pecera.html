@@ -30,9 +30,30 @@
     function saveTime() {
       const hour = document.getElementById('hour').value;
       const minute = document.getElementById('minute').value;
+      const timeString = `${hour}:${minute}`;
+
+      // Guardar localmente (opcional)
       localStorage.setItem("targetHour", hour);
       localStorage.setItem("targetMinute", minute);
-      document.getElementById("status").innerText = `Hora guardada: ${hour}:${minute}`;
+
+      // Enviar al dispositivo
+      fetch(`https://api.particle.io/v1/devices/${DEVICE_ID}/setTime`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `access_token=${ACCESS_TOKEN}&arg=${timeString}`
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.return_value === 1) {
+          document.getElementById("status").innerText = `Hora enviada al dispositivo: ${timeString}`;
+        } else {
+          document.getElementById("status").innerText = `Error al configurar hora. Código: ${data.return_value}`;
+        }
+      })
+      .catch(err => {
+        document.getElementById("status").innerText = "Error de red al enviar hora.";
+        console.error(err);
+      });
     }
 
     function activateNow() {
@@ -43,10 +64,14 @@
       })
       .then(res => res.json())
       .then(data => {
-        document.getElementById("status").innerText = "Servo activado.";
+        if (data.return_value === 1) {
+          document.getElementById("status").innerText = "Servo activado correctamente.";
+        } else {
+          document.getElementById("status").innerText = `Error al activar servo. Código: ${data.return_value}`;
+        }
       })
       .catch(err => {
-        document.getElementById("status").innerText = "Error al activar servo.";
+        document.getElementById("status").innerText = "Error de red al activar servo.";
         console.error(err);
       });
     }
